@@ -48,6 +48,12 @@ from launch.substitutions import (
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+#region - BAM 
+from launch_ros.actions import PushROSNamespace, SetRemap
+from launch.actions import GroupAction
+from launch.substitutions import EnvironmentVariable
+#endregion - BAM 
+
 
 def launch_setup(context, *args, **kwargs):
     # Initialize Arguments
@@ -92,6 +98,9 @@ def launch_setup(context, *args, **kwargs):
             " ",
             "simulation_controllers:=",
             controllers_file,
+            " ",
+            "ros_namespace:=",
+            LaunchConfiguration("ns"),
         ]
     )
     robot_description = {"robot_description": robot_description_content}
@@ -115,7 +124,8 @@ def launch_setup(context, *args, **kwargs):
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
+        arguments=["joint_state_broadcaster"],
+        # arguments=["joint_state_broadcaster", "--controller-manager", "/controller_manager"],
     )
 
     # Delay rviz start after `joint_state_broadcaster`
@@ -131,13 +141,15 @@ def launch_setup(context, *args, **kwargs):
     initial_joint_controller_spawner_started = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[initial_joint_controller, "-c", "/controller_manager"],
+        arguments=[initial_joint_controller],
+        # arguments=[initial_joint_controller, "-c", "/controller_manager"],
         condition=IfCondition(activate_joint_controller),
     )
     initial_joint_controller_spawner_stopped = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[initial_joint_controller, "-c", "/controller_manager", "--stopped"],
+        arguments=[initial_joint_controller],
+        # arguments=[initial_joint_controller, "-c", "/controller_manager", "--stopped"],
         condition=UnlessCondition(activate_joint_controller),
     )
 
@@ -190,7 +202,25 @@ def launch_setup(context, *args, **kwargs):
         gz_sim_bridge,
     ]
 
-    return nodes_to_start
+    group_action = GroupAction(
+     actions=[
+        PushROSNamespace(LaunchConfiguration("ns")),
+        SetRemap(src='/tf',dst='tf'),
+        SetRemap(src='/tf_static',dst='tf_static'),
+
+        robot_state_publisher_node,
+        joint_state_broadcaster_spawner,
+        delay_rviz_after_joint_state_broadcaster_spawner,
+        initial_joint_controller_spawner_stopped,
+        initial_joint_controller_spawner_started,
+        gz_spawn_entity,
+        gz_launch_description,
+        gz_sim_bridge,
+      ]
+    )
+
+
+    return [group_action]
 
 
 def generate_launch_description():
@@ -304,5 +334,8 @@ def generate_launch_description():
             description="Gazebo world file (absolute path or filename from the gazebosim worlds collection) containing a custom world.",
         )
     )
+
+    declared_arguments.append(DeclareLaunchArgument('ns', default_value=["/bam_",EnvironmentVariable('ROBOT_ID')]))
+
 
     return LaunchDescription(declared_arguments + [OpaqueFunction(function=launch_setup)])
