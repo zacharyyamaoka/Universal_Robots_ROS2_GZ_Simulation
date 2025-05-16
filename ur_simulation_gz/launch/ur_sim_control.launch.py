@@ -202,11 +202,29 @@ def launch_setup(context, *args, **kwargs):
         gz_sim_bridge,
     ]
 
+
+    tf_buffer_server = Node(
+    package="tf2_ros",
+    executable="buffer_server",
+    output="both",
+    emulate_tty=True
+    )
+
+    joint_buffer_server = Node(
+    package="bam_ros_utils",
+    executable="joint_state_buffer",
+    output="both",
+    emulate_tty=True
+    )
+
     group_action = GroupAction(
      actions=[
         PushROSNamespace(LaunchConfiguration("ns")),
         SetRemap(src='/tf',dst='tf'),
         SetRemap(src='/tf_static',dst='tf_static'),
+
+        tf_buffer_server,
+        joint_buffer_server,
 
         robot_state_publisher_node,
         joint_state_broadcaster_spawner,
