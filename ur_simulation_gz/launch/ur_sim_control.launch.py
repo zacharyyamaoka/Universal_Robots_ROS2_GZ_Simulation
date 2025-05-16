@@ -106,7 +106,7 @@ def launch_setup(context, *args, **kwargs):
     rviz_node = Node(
         package="rviz2",
         executable="rviz2",
-        name="rviz2",
+        # name="rviz2", Bug
         output="log",
         arguments=["-d", rviz_config_file],
         condition=IfCondition(launch_rviz),
@@ -163,8 +163,8 @@ def launch_setup(context, *args, **kwargs):
         launch_arguments={
             "gz_args": IfElseSubstitution(
                 gazebo_gui,
-                if_value=[" -r -v 4 ", world_file],
-                else_value=[" -s -r -v 4 ", world_file],
+                if_value=[" -r -v 1 ", world_file],
+                else_value=[" -s -r -v 1 ", world_file],
             )
         }.items(),
     )
