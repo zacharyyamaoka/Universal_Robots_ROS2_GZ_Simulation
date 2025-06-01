@@ -141,14 +141,14 @@ def launch_setup(context, *args, **kwargs):
     initial_joint_controller_spawner_started = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[initial_joint_controller],
+        arguments=[initial_joint_controller, "eef_controller"],
         # arguments=[initial_joint_controller, "-c", "/controller_manager"],
         condition=IfCondition(activate_joint_controller),
     )
     initial_joint_controller_spawner_stopped = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[initial_joint_controller],
+        arguments=[initial_joint_controller, "eef_controller"],
         # arguments=[initial_joint_controller, "-c", "/controller_manager", "--stopped"],
         condition=UnlessCondition(activate_joint_controller),
     )
