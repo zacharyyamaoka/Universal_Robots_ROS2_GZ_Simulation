@@ -103,7 +103,7 @@
 
   <xacro:if value="${gripper == 'crab_claw'}">
 
-      <joint name="$(arg tf_prefix)tool0-eef_link_1" type="fixed">
+      <joint name="$(arg tf_prefix)tool0_to_eef_link_1" type="fixed">
       <parent link="$(arg tf_prefix)tool0" />
       <child link="eef_link_1" />
       <origin xyz="0 0 0" rpy="0 0 0" />

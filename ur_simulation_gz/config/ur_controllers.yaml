@@ -18,6 +18,9 @@
       scaled_joint_trajectory_controller:
         type: ur_controllers/ScaledJointTrajectoryController
 
+      chained_scaled_joint_trajectory_controller:
+        type: ur_controllers/ScaledJointTrajectoryController
+
       forward_velocity_controller:
         type: velocity_controllers/JointGroupVelocityController
 
@@ -27,27 +30,14 @@
       eef_controller:
         type: parallel_gripper_action_controller/GripperActionController 
 
-  eef_controller:
-    ros__parameters:
-      action_monitor_rate: 25.0
-      joint: eef_joint_1 #TODO I may need to edit this if I chain it for gazebo
-      state_interfaces:
-        - position
-        - velocity
+      chained_eef_controller:
+        type: parallel_gripper_action_controller/GripperActionController 
 
-      # Make this tighter for small objects
-      goal_tolerance: 0.001 # Allows it to stop once within range
+      moteus_arm_controller:
+        type: moteus_controller/MoteusController
 
-      allow_stalling: true # Return success if it stalls
-      stall_timeout: 0.2
-      stall_velocity_threshold: 0.001
-
-      # in Gazebo these are not defined and will cause the controller to crash!
-      # max_effort_interface: eef_joint_1/max_torque
-      max_effort: 1.0
-
-      # max_velocity_interface: eef_joint_1/velocity_limit
-      max_velocity: 0.1
+      moteus_eef_controller:
+        type: moteus_controller/MoteusController
 
   speed_scaling_state_broadcaster:
     ros__parameters:
@@ -109,6 +99,34 @@
         wrist_2_joint: { trajectory: 0.2, goal: 0.1 }
         wrist_3_joint: { trajectory: 0.2, goal: 0.1 }
 
+  chained_scaled_joint_trajectory_controller:
+    ros__parameters:
+      joints:
+        - moteus_arm_controller/shoulder_pan_joint
+        - moteus_arm_controller/shoulder_lift_joint
+        - moteus_arm_controller/elbow_joint
+        - moteus_arm_controller/wrist_1_joint
+        - moteus_arm_controller/wrist_2_joint
+        - moteus_arm_controller/wrist_3_joint
+      command_interfaces:
+        - position
+      state_interfaces:
+        - position
+        - velocity
+      speed_scaling_interface_name: ""
+      state_publish_rate: 100.0
+      action_monitor_rate: 20.0
+      allow_partial_joints_goal: false
+      constraints:
+        stopped_velocity_tolerance: 0.2
+        goal_time: 0.0
+        shoulder_pan_joint: { trajectory: 0.2, goal: 0.1 }
+        shoulder_lift_joint: { trajectory: 0.2, goal: 0.1 }
+        elbow_joint: { trajectory: 0.2, goal: 0.1 }
+        wrist_1_joint: { trajectory: 0.2, goal: 0.1 }
+        wrist_2_joint: { trajectory: 0.2, goal: 0.1 }
+        wrist_3_joint: { trajectory: 0.2, goal: 0.1 }
+
   forward_velocity_controller:
     ros__parameters:
       joints:
@@ -129,3 +147,161 @@
         - wrist_1_joint
         - wrist_2_joint
         - wrist_3_joint
+
+  eef_controller:
+      ros__parameters:
+        action_monitor_rate: 25.0
+        joint: eef_joint_1 #TODO I may need to edit this if I chain it for gazebo
+        state_interfaces:
+          - position
+          - velocity
+
+        # Make this tighter for small objects
+        goal_tolerance: 0.001 # Allows it to stop once within range
+
+        allow_stalling: true # Return success if it stalls
+        stall_timeout: 0.2
+        stall_velocity_threshold: 0.001
+
+        # in Gazebo these are not defined and will cause the controller to crash!
+        # max_effort_interface: eef_joint_1/max_torque
+        max_effort: 1.0
+
+        # max_velocity_interface: eef_joint_1/velocity_limit
+        max_velocity: 0.1
+
+  chained_eef_controller:
+      ros__parameters:
+        action_monitor_rate: 25.0
+        joint: moteus_eef_controller/eef_joint_1 #TODO I may need to edit this if I chain it for gazebo
+        state_interfaces:
+          - position
+          - velocity
+
+        # Make this tighter for small objects
+        goal_tolerance: 0.001 # Allows it to stop once within range
+
+        allow_stalling: true # Return success if it stalls
+        stall_timeout: 0.2
+        stall_velocity_threshold: 0.001
+
+        # in Gazebo these are not defined and will cause the controller to crash!
+        # max_effort_interface: eef_joint_1/max_torque
+        max_effort: 1.0
+
+        # max_velocity_interface: eef_joint_1/velocity_limit
+        max_velocity: 0.1
+
+  moteus_arm_controller:
+    ros__parameters:
+      joint_names:
+        - shoulder_pan_joint
+        - shoulder_lift_joint
+        - elbow_joint
+        - wrist_1_joint
+        - wrist_2_joint
+        - wrist_3_joint
+
+      joint_params:
+        shoulder_pan_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 500.0
+        shoulder_lift_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 500.0
+        elbow_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 500.0
+        wrist_1_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 100.0
+        wrist_2_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 100.0
+        wrist_3_joint: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 100.0 
+
+      reference_interfaces: 
+        - position
+        - velocity
+        - effort
+      
+      frequency: 200.0
+
+      pid_gains:
+        shoulder_pan_joint:
+          p: 500.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0
+        shoulder_lift_joint:
+          p: 500.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0
+        elbow_joint:
+          p: 500.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0
+        wrist_1_joint:
+          p: 100.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0
+        wrist_2_joint:
+          p: 100.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0
+        wrist_3_joint:
+          p: 100.0
+          d: 0.0
+          i: 0.0
+          ilimit: 0.0     
+
+  moteus_eef_controller:
+    ros__parameters:
+      joint_names:
+        - eef_joint_1
+
+      joint_params:
+        eef_joint_1: 
+          position_max: 3.14
+          position_min: -3.14
+          position_offset: 0.0
+          velocity_max: 10.0
+          effort_max: 10.0 
+
+      reference_interfaces: 
+        - position
+        - velocity
+        - effort
+      
+      frequency: 200.0
+
+      pid_gains: 
+        eef_joint_1:
+          p: 1.0
+          d: 0.5
+          i: 0.25
+          ilimit: 0.0   
