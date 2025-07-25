@@ -19,7 +19,8 @@
   <xacro:arg name="visual_params" default="$(find ur_description)/config/$(arg ur_type)/visual_parameters.yaml"/>
   <xacro:arg name="transmission_hw_interface" default=""/>
   <xacro:arg name="safety_limits" default="false"/>
-  <xacro:arg name="safety_pos_margin" default="0.15"/>
+  <xacro:arg name="safety_pos_margin" default="0.0"/>
+  <!-- <xacro:arg name="safety_pos_margin" default="0.15"/> -->
   <xacro:arg name="safety_k_position" default="20"/>
 
   <xacro:arg name="simulation_controllers" default="" />
@@ -28,7 +29,7 @@
   <!-- create link fixed to the "world" -->
   <link name="world" />
 
-  <link name="ground_plane">
+  <!-- <link name="ground_plane">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
@@ -50,7 +51,7 @@
     <origin xyz="0 0 -0.01" rpy="0 0 0"/>
     <parent link="world"/>
     <child link="ground_plane"/>
-  </joint>
+  </joint> -->
 
   <!-- arm -->
   <xacro:ur_robot
